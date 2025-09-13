@@ -1,0 +1,18 @@
+﻿services:
+  user-api:
+    build:
+      context: User.Api
+      dockerfile: Dockerfile
+    container_name: user-api
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+
+  identity-api:
+    build:
+      context: Identity.Api
+      dockerfile: Dockerfile
+    container_name: identity-api
+    ports:
+      - "5002:8082"
+      - "5003:8083"

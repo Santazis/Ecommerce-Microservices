@@ -1,0 +1,6 @@
+
+
+GET http://localhost:5000/weatherforecast/
+Accept: application/json
+
+###
