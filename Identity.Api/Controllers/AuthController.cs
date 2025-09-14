@@ -3,6 +3,7 @@ using Identity.Api.Interfaces.Jwt;
 using Identity.Api.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Api.Controllers;
@@ -25,32 +26,37 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> RegisterAsync(string email, string password)
+    public async Task<IActionResult> RegisterAsync([FromBody]RegisterRequest request,CancellationToken cancellation)
     {
         var user = new ApplicationUser
         {
-            UserName = email,
-            Email = email,
+            UserName = request.Email,
+            Email = request.Email,
         };
-        await using var trnsaction = await _applicationDbContext.Database.BeginTransactionAsync();
-        var result = await _userManager.CreateAsync(user, password);
+        await using var trnsaction = await _applicationDbContext.Database.BeginTransactionAsync(cancellation);
+        var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {
             return BadRequest(result.Errors);
         }
         var addToRole = await _userManager.AddToRoleAsync(user, Roles.Customer);
-        trnsaction.Commit();
+        if (!addToRole.Succeeded)
+        {
+            return BadRequest(addToRole.Errors);
+        }
+        await trnsaction.CommitAsync(cancellation);
         return Ok();
     }
+    [ProducesResponseType<LoginResponseDto>(200)]
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync(string email, string password)
+    public async Task<IActionResult> LoginAsync([FromBody]LoginRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByEmailAsync(request.Email);;
         if (user is null)
         {
             return BadRequest();
         }
-        var result = await _signInManager.CheckPasswordSignInAsync(user, password,false);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password,false);
         if (!result.Succeeded)
         {
             return BadRequest();
