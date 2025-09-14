@@ -2,6 +2,7 @@ using Database;
 using Identity.Api.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseNpgsql(Environment.GetEnvironmentVariable("NpgsqlConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-
+builder.Services.AddObservability("identity-api");
 builder.Services.ConfigureAuthJwt(builder.Configuration);
 builder.Services.AddAuthServices();
 builder.Services.AddControllers();

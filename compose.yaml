@@ -1,4 +1,26 @@
 ﻿services:
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    ports:
+      - "18888:18888"
+    container_name: aspire-dashboard
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "16686:16686"
+  gateway-api:
+    build:
+      context: Ecommerce.Gateway
+      dockerfile: Dockerfile
+    container_name: gateway-api
+    ports:
+      - "5004:8080"
+      - "5005:8081"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
   user-api:
     build:
       context: User.Api
@@ -18,4 +40,5 @@
       - "5002:8080"
       - "5003:8081"
     environment:
-      NpgsqlConnection: "Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Identity"
+      - NpgsqlConnection=Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Identity
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
