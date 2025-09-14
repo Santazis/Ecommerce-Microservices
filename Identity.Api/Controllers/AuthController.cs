@@ -7,19 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Api.Controllers;
 [ApiController]
-[Route("api/auth")]
+[Route("auth")]
 public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IAccessTokenService _accessTokenService;
-    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService)
+    private readonly ApplicationDbContext _applicationDbContext;
+    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _signInManager = signInManager;
         _accessTokenService = accessTokenService;
+        _applicationDbContext = applicationDbContext;
     }
 
     [HttpPost("register")]
@@ -30,12 +32,14 @@ public class AuthController : ControllerBase
             UserName = email,
             Email = email,
         };
+        await using var trnsaction = await _applicationDbContext.Database.BeginTransactionAsync();
         var result = await _userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
             return BadRequest(result.Errors);
         }
         var addToRole = await _userManager.AddToRoleAsync(user, Roles.Customer);
+        trnsaction.Commit();
         return Ok();
     }
     [HttpPost("login")]
@@ -56,11 +60,4 @@ public class AuthController : ControllerBase
         var response = new LoginResponseDto(token);
         return Ok(response);
     }
-    [Authorize]
-    [HttpGet("test")]
-    public IActionResult Test()
-    {
-        return Ok();
-    }
-    
 }
