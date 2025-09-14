@@ -21,6 +21,15 @@
       - "5005:8081"
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+    volumes:
+      - .:/app
+      - /app/bin
+      - /app/obj
+    develop:
+      watch:
+        - action: sync
+          path: Ecommerce.Gateway
+          target: /app
   user-api:
     build:
       context: User.Api
@@ -31,6 +40,15 @@
       - "5001:8081"
     environment:
       NpgsqlConnection: "Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Users"
+    volumes:
+      - .:/app
+      - /app/bin
+      - /app/obj
+    develop:
+      watch:
+        - action: sync
+          path: Ecommerce.Gateway
+          target: /app
   identity-api:
     build:
       context: Identity.Api
@@ -42,3 +60,12 @@
     environment:
       - NpgsqlConnection=Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Identity
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+    volumes:
+      - .:/app
+      - /app/bin
+      - /app/obj
+    develop:
+      watch:
+        - action: sync
+          path: Ecommerce.Gateway
+          target: /app
