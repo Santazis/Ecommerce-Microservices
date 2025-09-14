@@ -60,4 +60,10 @@ public class AuthController : ControllerBase
         var response = new LoginResponseDto(token);
         return Ok(response);
     }
+   
+    [HttpGet("test-auth")]
+    public IActionResult TestAuth()
+    {
+        return Ok();
+    }
 }
