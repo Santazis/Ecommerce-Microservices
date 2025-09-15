@@ -9,22 +9,31 @@ public class User : AggregateRoot
     {
     }
     protected User(){}
-    public Name Name { get;private set; }
     public Email Email { get;private set; }
+    public Name Name { get;private set; }
     public Address Address { get;private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? LastLogin { get; private set; }
     
-    public static User Create(Name name,Email email,Address address)
+    public static User Create(Guid id,Email email)
     {
-        var user = new User(Guid.NewGuid())
+        var user = new User(id)
         {
-            Name = name,
+            Name = new Name(null,null),
+            Address = Address.Create(null,null,null,null,null),
             Email = email,
-            Address = address,
             CreatedAt = DateTime.UtcNow,
         };
-        user.RaiseDomainEvent(new UserCreatedDomainEvent(user));
         return user;
+    }
+
+    public void CreateProfile(Name name, Address address)
+    {
+        Name = name;
+        Address = address;
+    }
+    public void UpdateLastLogin()
+    {
+        LastLogin = DateTime.UtcNow;
     }
 }

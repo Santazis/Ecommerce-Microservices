@@ -1,9 +1,13 @@
 ﻿using System.Text;
+using Identity.Api.Grpc.Clients;
+using Identity.Api.Interfaces;
 using Identity.Api.Interfaces.Jwt;
 using Identity.Api.Options;
+using Identity.Api.Services;
 using Identity.Api.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ProfileGrpc;
 
 namespace Identity.Api.Extensions;
 
@@ -41,6 +45,33 @@ public static class ServiceRegistrationExtensions
     {
         services.AddScoped<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();
+        return services;
+    }
+
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    {
+        services.AddScoped<IUserServiceClient, GrpcUserServiceClient>();
+        return services;
+    }
+
+    public static IServiceCollection AddGrpcClients(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddGrpcClient<UserService.UserServiceClient>(opt =>
+        {
+            var address = config["GrpcServices:UserServiceClient"];
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new Exception("GrpcServices:UserServiceClient is not set");
+            }
+            opt.Address = new Uri(address);
+        }).ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = 
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            return handler;
+        });
         return services;
     }
 }
