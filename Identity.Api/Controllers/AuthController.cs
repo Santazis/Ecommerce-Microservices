@@ -1,9 +1,10 @@
 ﻿using Database;
+using FluentValidation;
+using Identity.Api.Interfaces;
 using Identity.Api.Interfaces.Jwt;
 using Identity.Api.Models.Dtos;
-using Microsoft.AspNetCore.Authorization;
+using Identity.Api.Models.Requests;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Api.Controllers;
@@ -16,18 +17,25 @@ public class AuthController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IAccessTokenService _accessTokenService;
     private readonly ApplicationDbContext _applicationDbContext;
-    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext)
+    private readonly IUserServiceClient _userService;
+    private readonly IValidator<RegisterRequest> _registerValidator;
+    private readonly IValidator<LoginRequest> _loginValidator;
+    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext, IUserServiceClient userService, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
     {
-        _userManager = userManager;
+        _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         _dbContext = dbContext;
         _signInManager = signInManager;
         _accessTokenService = accessTokenService;
         _applicationDbContext = applicationDbContext;
+        _userService = userService;
+        _registerValidator = registerValidator;
+        _loginValidator = loginValidator;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync([FromBody]RegisterRequest request,CancellationToken cancellation)
     {
+        await _registerValidator.ValidateAndThrowAsync(request,cancellation);
         var user = new ApplicationUser
         {
             UserName = request.Email,
@@ -44,8 +52,9 @@ public class AuthController : ControllerBase
         {
             return BadRequest(addToRole.Errors);
         }
+        var createProfile = await _userService.CreateProfileAsync(user.Id,user.Email,cancellation);
         await trnsaction.CommitAsync(cancellation);
-        return Ok();
+        return Ok(createProfile);
     }
     [ProducesResponseType<LoginResponseDto>(200)]
     [HttpPost("login")]
@@ -67,9 +76,12 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
    
+    
     [HttpGet("test-auth")]
-    public IActionResult TestAuth()
-    {
-        return Ok();
+    public async Task<IActionResult> TestAuth(CancellationToken cancellation)
+    {   
+        var createProfile = await _userService.CreateProfileAsync(Guid.NewGuid(), "EMAil",cancellation);
+
+        return Ok(createProfile);
     }
 }
