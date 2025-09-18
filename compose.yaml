@@ -32,7 +32,7 @@
             target: /app
     user-api:
       build:
-        context: User.Api
+        context: Services/User/User.Api
         dockerfile: Dockerfile
       container_name: user-api
       ports:
@@ -51,7 +51,7 @@
             target: /app
     identity-api:
       build:
-        context: Identity.Api
+        context: Services/Identity/Identity.Api
         dockerfile: Dockerfile
       container_name: identity-api
       ports:

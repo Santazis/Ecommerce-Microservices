@@ -31,9 +31,11 @@ public class UserService : IUserService
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellation);
         if (user is null)
         {
+            Console.WriteLine("User not found");
             return Result.Failure(UserErrors.UserNotFound);
+            
         }
-        var address= Address.Create(request.Street,request.City,request.State,request.Country,request.ZipCode);
+        var address = Address.Create(request.Street,request.City,request.State,request.Country,request.ZipCode);
         var name = new Name(request.FirstName,request.LastName);
         user.CreateProfile(name,address);
         await _context.SaveChangesAsync(cancellation);

@@ -21,7 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Identity.Api\Identity.Api.csproj" />
       <ProjectReference Include="..\User.Application\User.Application.csproj" />
     </ItemGroup>
 

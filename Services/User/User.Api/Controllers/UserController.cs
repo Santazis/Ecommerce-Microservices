@@ -19,12 +19,12 @@ public class UserController : ControllerBase
     [HttpPost("profile")]
     public async Task<IActionResult> CreateProfileAsync([FromBody] UpdateProfileRequest request, CancellationToken cancellation)
     {
-    
-
-        // if (UserId is null) return Unauthorized("User not found");
-        var userId = Guid.Parse("01994ea1-fb1e-7e5e-89b7-c3d2958e9a04");
-        var result = await _userService.UpdateProfileAsync(userId, request, cancellation);
-        
+         if (UserId is null) return Unauthorized();
+        var result = await _userService.UpdateProfileAsync(UserId.Value, request, cancellation);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
         return Ok();
     }
 }

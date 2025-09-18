@@ -67,6 +67,7 @@ builder.Services.AddAuthentication(o =>
 builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+builder.Services.ConfigureSwaggerWithJwt();
 builder.Services.AddGrpc();
 var app = builder.Build();
 
