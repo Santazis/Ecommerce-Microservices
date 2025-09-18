@@ -21,9 +21,9 @@ public class UserController : ControllerBase
     {
          if (UserId is null) return Unauthorized();
         var result = await _userService.UpdateProfileAsync(UserId.Value, request, cancellation);
-        if (!result.IsFailure)
+        if (result.IsFailure)
         {
-            return BadRequest();
+            return BadRequest(result.Error);
         }
         return Ok();
     }
