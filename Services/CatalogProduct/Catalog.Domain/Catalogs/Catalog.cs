@@ -15,6 +15,7 @@ public sealed class Catalog : AggregateRoot
     public string Name { get; private set; }
     public string? Description { get; private set; }
     public Guid? ParentId { get; private set; }
+    public Catalog? Parent { get; private set; }
     public DateTime CreatedDate { get; private set; }
     public DateTime? UpdatedDate { get; private set; }
 
