@@ -71,9 +71,10 @@
       container_name: catalog-api
       environment:
         - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
-      
-
-services:
+        - NpgsqlConnection=Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Catalog
+  
+  
+  services:
   catalog.application:
     image: catalog.application
     build:

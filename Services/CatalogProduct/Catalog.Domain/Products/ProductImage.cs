@@ -13,12 +13,14 @@ public sealed class ProductImage : Entity
     }
     public string Url { get; private set; }
     public int SortOrder { get; private set; }
-
-    public static ProductImage Create(string url, int sortOrder)
+    public Guid ProductId { get; private set; }
+    public Product Product { get; private set; } = null!;
+    public static ProductImage Create(string url, int sortOrder,Guid productId)
     {
         return new ProductImage(Guid.NewGuid())
         {
             Url = url,
+            ProductId = productId,
             SortOrder = sortOrder,
         };
     }

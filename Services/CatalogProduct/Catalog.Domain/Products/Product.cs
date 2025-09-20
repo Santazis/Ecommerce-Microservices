@@ -15,6 +15,7 @@ public sealed class Product : AggregateRoot
     public string Description { get; private set; }
     public Money Price { get; private set; }
     public Guid CatalogId { get; private set; }
+    public Catalogs.Catalog Catalog { get; private set; } = null!;
     public int StockQuantity { get; private set; }
     public Guid? MerchantId { get; private set; }
     

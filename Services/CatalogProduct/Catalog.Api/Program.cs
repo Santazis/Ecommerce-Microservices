@@ -1,5 +1,7 @@
 using Catalog.Api.Extensions;
+using Catalog.Database;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Observability;
 //disabling tls for grpc to work without https
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
@@ -18,6 +20,10 @@ builder.WebHost.ConfigureKestrel(o =>
     ;
 });
 
+builder.Services.AddDbContext<ApplicationDbContext>(o =>
+{
+    o.UseNpgsql(Environment.GetEnvironmentVariable("NpgsqlConnection"));
+});
 builder.Services.AddControllers();
 builder.Services.AddObservability("catalog-api");
 builder.Services.AddSwaggerGen();
