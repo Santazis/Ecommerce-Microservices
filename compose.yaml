@@ -64,8 +64,19 @@
         - .:/app
         - /app/bin
         - /app/obj
-      develop:
-        watch:
-          - action: sync
-            path: Ecommerce.Gateway
-            target: /app
+    catalog.api:
+      build:
+        context: Services/CatalogProduct/Catalog.Api
+        dockerfile: Dockerfile
+      container_name: catalog-api
+      environment:
+        - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      
+
+services:
+  catalog.application:
+    image: catalog.application
+    build:
+      context: .
+      dockerfile: Catalog.Application/Dockerfile
+
