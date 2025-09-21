@@ -18,7 +18,7 @@ public sealed class Catalog : AggregateRoot
     public Catalog? Parent { get; private set; }
     public DateTime CreatedDate { get; private set; }
     public DateTime? UpdatedDate { get; private set; }
-
+    
     public static Catalog Create(string name, string? description, Guid? parentId)
     {
         return new Catalog(Guid.NewGuid()) 

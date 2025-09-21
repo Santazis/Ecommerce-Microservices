@@ -1,4 +1,6 @@
-﻿namespace User.Domain.Common;
+﻿using SharedKernel.Common;
+
+namespace User.Domain.Common;
 
 public class Result
 {
@@ -31,7 +33,7 @@ public class Result<T> : Result
     public T Value =>
         IsSuccess ? _value! : throw new ArgumentException("Value can not be accessed when success is false");
 
-    public Result(T value) : base(true, Error.None){}
+    public Result(T value) : base(true, Error.None){_value = value;}
     public Result(Error error) : base(false, error)
     {
         _value = default;

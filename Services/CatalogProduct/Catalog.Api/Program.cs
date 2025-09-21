@@ -24,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(o =>
 {
     o.UseNpgsql(Environment.GetEnvironmentVariable("NpgsqlConnection"));
 });
+builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
 builder.Services.AddObservability("catalog-api");
 builder.Services.AddSwaggerGen();
@@ -34,6 +35,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.SeedCatalogs();
+    app.SeedProducts();
 }
 
 app.UseHttpsRedirection();
