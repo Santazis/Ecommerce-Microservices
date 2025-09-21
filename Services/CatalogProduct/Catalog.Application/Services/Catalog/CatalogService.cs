@@ -19,7 +19,13 @@ public class CatalogService : ICatalogService
 
     public async Task<Result> CreateAsync(CreateCatalogRequest request, CancellationToken cancellation)
     {
-        var createdCatalog = Domain.Catalogs.Catalog.Create(request.Name, request.Description, request.ParentId);
+        Domain.Catalogs.Catalog? parent = null;
+        if (request.ParentId.HasValue)
+        {
+            parent = await _context.Catalogs.FirstOrDefaultAsync(c => c.Id == request.ParentId,cancellation);
+            if (parent is null) return Result.Failure(CatalogErrors.NotFound);
+        }
+        var createdCatalog = Domain.Catalogs.Catalog.Create(request.Name, request.Description, parent,request.Slug);
         await _context.Catalogs.AddAsync(createdCatalog,cancellation);
         return Result.Success;
     }
@@ -27,7 +33,7 @@ public class CatalogService : ICatalogService
     public async Task<Result<CatalogDto>> GetByIdAsync(Guid id, CancellationToken cancellation)
     {
         var catalog = await _context.Catalogs
-                .Select(c=> new CatalogDto(c.Id,c.Name,c.Description,c.ParentId))
+                .Select(c=> new CatalogDto(c.Id,c.Name,c.Description,c.ParentId,c.Slug))
                 .FirstOrDefaultAsync(c => c.Id == id,cancellation);
         if (catalog is null) return Result<CatalogDto>.Failure(CatalogErrors.NotFound);
         return Result<CatalogDto>.Success(catalog);
@@ -37,7 +43,7 @@ public class CatalogService : ICatalogService
     public async Task<Result<IEnumerable<CatalogsMenuDto>>> GetCatalogsMenuAsync(CancellationToken cancellation)
     {
         var catalogs = await _context.Catalogs.AsNoTracking()
-            .Select(c => new CatalogsMenuDto(c.Id, c.Name, c.Description, c.ParentId, new List<CatalogsMenuDto>()))
+            .Select(c => new CatalogsMenuDto(c.Id, c.Name, c.Description, c.ParentId,c.Slug, new List<CatalogsMenuDto>()))
             .ToListAsync(cancellation);
         var catalogRoots = new List<CatalogsMenuDto>();
         var catalogDict = catalogs.ToDictionary(c=> c.Id);

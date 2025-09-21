@@ -1,4 +1,5 @@
-﻿using SharedKernel.Primitives;
+﻿using System.Text;
+using SharedKernel.Primitives;
 
 namespace Catalog.Domain.Catalogs;
 
@@ -18,25 +19,57 @@ public sealed class Catalog : AggregateRoot
     public Catalog? Parent { get; private set; }
     public DateTime CreatedDate { get; private set; }
     public DateTime? UpdatedDate { get; private set; }
-    
-    public static Catalog Create(string name, string? description, Guid? parentId)
+    public string Slug { get; private set; }
+    public static Catalog Create(string name, string? description, Catalog? parent,string slug)
     {
         return new Catalog(Guid.NewGuid()) 
         {
             Name = name,
             Description = description,
-            ParentId = parentId,
-            CreatedDate = DateTime.UtcNow
+            ParentId = parent?.Id,
+            CreatedDate = DateTime.UtcNow,
+            Slug = BuildSlug(parent?.Slug,slug)
         };
     }
     
-    public void SetParent(Guid parentId)
+    public void SetParent(Catalog parent)
     {
-        ParentId = parentId;
+        ParentId = parent.Id;
+        if (!string.IsNullOrWhiteSpace(parent.Slug))
+        {
+            Slug = BuildSlug(parent.Slug, Slug);
+        }
     }
 
-    public void RemoveParent()
+    public void RemoveParent(Catalog parent)
     {
-        ParentId = null;   
+        ParentId = null;
+        if (!string.IsNullOrWhiteSpace(parent.Slug))
+        {
+            Slug = RemoveSlug(parent.Slug, Slug);
+        }
     }
+
+    private static string BuildSlug(string? parentSlug,string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) throw new ArgumentException("Slug cannot be null or empty");
+        if (!string.IsNullOrWhiteSpace(parentSlug))
+        {
+            return $"{parentSlug}/{slug}";
+        }
+        return $"catalog" + "/" +slug;
+    }
+
+    private static string RemoveSlug(string parentSlug, string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug) || string.IsNullOrWhiteSpace(parentSlug)) throw new ArgumentException("Slug cannot be null or empty");
+        string prefix = parentSlug + "/";
+        if (slug.StartsWith(prefix))
+        {
+            var replaced =  slug[prefix.Length..];
+            return "catalog" + "/" + replaced;
+        }
+        return slug;
+    }
+    
 }
