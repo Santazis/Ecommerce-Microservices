@@ -13,19 +13,19 @@ public static class DatabaseSeedExtensions
 
         if (!context.Catalogs.Any())
         {
-            var electronics = Catalog.Domain.Catalogs.Catalog.Create("Electronics", "All electronic items", null);
-            var phones = Catalog.Domain.Catalogs.Catalog.Create("Phones", "Smartphones and mobile phones", electronics.Id);
-            var laptops = Catalog.Domain.Catalogs.Catalog.Create("Laptops", "Portable computers", electronics.Id);
+            var electronics = Catalog.Domain.Catalogs.Catalog.Create("Electronics", "All electronic items", null, "electronics");
+            var phones = Catalog.Domain.Catalogs.Catalog.Create("Phones", "Smartphones and mobile phones", electronics, "phones");
+            var laptops = Catalog.Domain.Catalogs.Catalog.Create("Laptops", "Portable computers", electronics, "laptops");
 
-            var fashion = Catalog.Domain.Catalogs.Catalog.Create("Fashion", "Clothing and accessories", null);
-            var men = Catalog.Domain.Catalogs.Catalog.Create("Men", "Men's clothing", fashion.Id);
-            var women = Catalog.Domain.Catalogs.Catalog.Create("Women", "Women's clothing", fashion.Id);
+            var fashion = Catalog.Domain.Catalogs.Catalog.Create("Fashion", "Clothing and accessories", null, "fashion");
+            var men = Catalog.Domain.Catalogs.Catalog.Create("Men", "Men's clothing", fashion, "men");
+            var women = Catalog.Domain.Catalogs.Catalog.Create("Women", "Women's clothing", fashion, "women");
 
-            var menShirts = Catalog.Domain.Catalogs.Catalog.Create("Shirts", "Men's shirts", men.Id);
-            var menPants = Catalog.Domain.Catalogs.Catalog.Create("Pants", "Men's pants", men.Id);
+            var menShirts = Catalog.Domain.Catalogs.Catalog.Create("Shirts", "Men's shirts", men, "shirts");
+            var menPants = Catalog.Domain.Catalogs.Catalog.Create("Pants", "Men's pants", men, "pants");
 
-            var womenDresses = Catalog.Domain.Catalogs.Catalog.Create("Dresses", "Women's dresses", women.Id);
-            var womenShoes = Catalog.Domain.Catalogs.Catalog.Create("Shoes", "Women's shoes", women.Id);
+            var womenDresses = Catalog.Domain.Catalogs.Catalog.Create("Dresses", "Women's dresses", women, "dresses");
+            var womenShoes = Catalog.Domain.Catalogs.Catalog.Create("Shoes", "Women's shoes", women, "shoes");
 
             var catalogs = new List<Catalog.Domain.Catalogs.Catalog>
             {
