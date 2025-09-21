@@ -1,4 +1,4 @@
-﻿namespace User.Domain.Common;
+﻿namespace SharedKernel.Common;
 
 public sealed record Error(string Code,string? Message = null) 
 {
