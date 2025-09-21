@@ -1,4 +1,4 @@
-﻿using User.Domain.Models.Primitives;
+﻿using SharedKernel.Primitives;
 
 namespace Catalog.Domain.Products;
 

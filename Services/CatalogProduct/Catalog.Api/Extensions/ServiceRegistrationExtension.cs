@@ -1,5 +1,5 @@
 ﻿using Catalog.Application.Interfaces;
-using Catalog.Application.Services.Category;
+using Catalog.Application.Services.Catalog;
 
 namespace Catalog.Api.Extensions;
 

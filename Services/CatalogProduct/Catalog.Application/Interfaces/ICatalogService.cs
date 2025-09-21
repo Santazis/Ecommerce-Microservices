@@ -1,6 +1,6 @@
 ﻿using Catalog.Application.Models.Catalogs;
 using Catalog.Application.Models.Requests.Catalog;
-using User.Domain.Common;
+using SharedKernel.Common;
 
 namespace Catalog.Application.Interfaces;
 

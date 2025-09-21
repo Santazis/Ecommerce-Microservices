@@ -1,6 +1,4 @@
-﻿using SharedKernel.Common;
-
-namespace User.Domain.Common;
+﻿namespace SharedKernel.Common;
 
 public class Result
 {

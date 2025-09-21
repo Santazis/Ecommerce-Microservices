@@ -1,4 +1,4 @@
-﻿namespace User.Domain.Models.Primitives;
+﻿namespace SharedKernel.Primitives;
 
 public abstract class Entity : IEquatable<Entity>
 {

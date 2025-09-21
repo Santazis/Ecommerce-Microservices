@@ -1,4 +1,4 @@
-﻿using User.Domain.Models.Primitives;
+﻿using SharedKernel.Primitives;
 
 namespace Catalog.Domain.Catalogs;
 
@@ -30,7 +30,7 @@ public sealed class Catalog : AggregateRoot
         };
     }
     
-    public void SetParentId(Guid parentId)
+    public void SetParent(Guid parentId)
     {
         ParentId = parentId;
     }

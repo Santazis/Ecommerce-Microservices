@@ -4,9 +4,9 @@ using Catalog.Application.Models.Requests.Catalog;
 using Catalog.Database;
 using Catalog.Domain.Common.Errors;
 using Microsoft.EntityFrameworkCore;
-using User.Domain.Common;
+using SharedKernel.Common;
 
-namespace Catalog.Application.Services.Category;
+namespace Catalog.Application.Services.Catalog;
 
 public class CatalogService : ICatalogService
 {

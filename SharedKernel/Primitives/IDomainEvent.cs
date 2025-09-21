@@ -1,4 +1,4 @@
-﻿namespace User.Domain.Models.Primitives;
+﻿namespace SharedKernel.Primitives;
 
 public interface IDomainEvent
 {
