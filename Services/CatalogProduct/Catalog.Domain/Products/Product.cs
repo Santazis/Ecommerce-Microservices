@@ -32,7 +32,7 @@ public sealed class Product : AggregateRoot
             Price = price,
             CatalogId = catalogId,
             StockQuantity = stockQuantity,
-            MerchantId = merchantId
+            MerchantId = merchantId,
         };
     } 
     
