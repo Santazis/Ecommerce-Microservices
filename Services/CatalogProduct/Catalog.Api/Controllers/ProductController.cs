@@ -13,13 +13,11 @@ namespace Catalog.Api.Controllers
     {
         private readonly IProductService _productService;
         private readonly IValidator<CreateProductRequest> _validator;
-        private readonly IImageProcessingService _imageProcessingService;
         private readonly ITempStorageService _tempStorageService;
-        public ProductController(IProductService productService, IValidator<CreateProductRequest> validator, IImageProcessingService imageProcessingService, ITempStorageService tempStorageService)
+        public ProductController(IProductService productService, IValidator<CreateProductRequest> validator,  ITempStorageService tempStorageService)
         {
             _productService = productService;
             _validator = validator;
-            _imageProcessingService = imageProcessingService;
             _tempStorageService = tempStorageService;
         }
 
@@ -39,8 +37,8 @@ namespace Catalog.Api.Controllers
                 return new ProcessImageRequest(result.Value, tempUrl, i.SortOrder);
             });
             var imageRequests = await Task.WhenAll(processImageRequests);
-            var res = await _imageProcessingService.SaveProductImagesAsync(imageRequests);
-            return Ok(res);
+            // publish integration event
+            return Ok();
         }
     }
 
