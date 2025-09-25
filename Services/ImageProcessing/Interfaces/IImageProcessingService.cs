@@ -1,7 +1,6 @@
-﻿using Catalog.Application.Models.Images;
-using Catalog.Application.Models.Requests.ProductImage;
+﻿using ImageProcessing.Models;
 
-namespace Catalog.Application.Interfaces;
+namespace ImageProcessing.Interfaces;
 
 public interface IImageProcessingService
 {

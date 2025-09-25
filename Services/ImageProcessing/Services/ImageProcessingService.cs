@@ -1,10 +1,10 @@
-﻿using Catalog.Application.Interfaces;
-using Catalog.Application.Models.Images;
-using Catalog.Application.Models.Requests.ProductImage;
+﻿using System.Net.Mime;
+using ImageProcessing.Interfaces;
+using ImageProcessing.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
-namespace Catalog.Infrastructure.Services;
+namespace ImageProcessing.Services;
 
 public class ImageProcessingService : IImageProcessingService
 {
