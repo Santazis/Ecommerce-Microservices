@@ -5,5 +5,5 @@ namespace Catalog.Application.Interfaces;
 
 public interface IProductService
 {
-    Task<Result> CreateAsync(CreateProductRequest request,CancellationToken cancellation);
+    Task<Result<Guid>> CreateAsync(CreateProductRequest request,CancellationToken cancellation);
 }

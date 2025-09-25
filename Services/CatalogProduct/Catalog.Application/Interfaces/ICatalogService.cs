@@ -9,4 +9,5 @@ public interface ICatalogService
     Task<Result> CreateAsync(CreateCatalogRequest request,CancellationToken cancellation);
     Task<Result<CatalogDto>> GetByIdAsync(Guid id,CancellationToken cancellation);
     Task<Result<IEnumerable<CatalogsMenuDto>>> GetCatalogsMenuAsync(CancellationToken cancellation);
+    Task<Result> CatalogExistsAsync(Guid id,CancellationToken cancellation);
 }

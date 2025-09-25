@@ -30,6 +30,16 @@ public class CatalogService : ICatalogService
         return Result.Success;
     }
 
+    public async Task<Result> CatalogExistsAsync(Guid id, CancellationToken cancellation)
+    {
+        var exists  =  await _context.Catalogs.AnyAsync(c => c.Id == id,cancellation);
+        if (exists)
+        {
+            return Result.Success;
+        }
+        return Result.Failure(CatalogErrors.NotFound);
+    }
+
     public async Task<Result<CatalogDto>> GetByIdAsync(Guid id, CancellationToken cancellation)
     {
         var catalog = await _context.Catalogs

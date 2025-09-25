@@ -10,4 +10,8 @@
       <ProjectReference Include="..\Catalog.Database\Catalog.Database.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+    </ItemGroup>
+
 </Project>
