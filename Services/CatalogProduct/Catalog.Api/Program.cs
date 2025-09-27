@@ -26,6 +26,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(o =>
 {
     o.UseNpgsql(Environment.GetEnvironmentVariable("NpgsqlConnection"));
 });
+builder.Services.AddMessageBroker(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddValidatorsFromAssembly(typeof(ApplicationAssembly).Assembly, includeInternalTypes: true);
 builder.Services.AddControllers();
