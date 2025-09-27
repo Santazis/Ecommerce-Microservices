@@ -28,6 +28,11 @@
     <ItemGroup>
       <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
       <ProjectReference Include="..\Catalog.Database\Catalog.Database.csproj" />
+      <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="images\temp\" />
     </ItemGroup>
 
 </Project>
