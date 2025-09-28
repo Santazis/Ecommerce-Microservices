@@ -4,5 +4,5 @@ namespace ImageProcessing.Interfaces;
 
 public interface IImageProcessingService
 {
-    Task<ProductImageProcessedResult> SaveProductImagesAsync(IEnumerable<ProcessImageRequest> images);
+    Task<ProductImageProcessedResult> SaveProductImagesAsync(Guid productId,Dictionary<Guid,string> images);
 }

@@ -26,7 +26,7 @@ public class Result
 
 public class Result<T> : Result
 {
-    public readonly T? _value;
+    private readonly T? _value;
 
     public T Value =>
         IsSuccess ? _value! : throw new ArgumentException("Value can not be accessed when success is false");

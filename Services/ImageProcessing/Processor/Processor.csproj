@@ -25,4 +25,8 @@
       <None Remove="ImageProcessing.Api\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Contracts\Contracts.csproj" />
+    </ItemGroup>
+
 </Project>

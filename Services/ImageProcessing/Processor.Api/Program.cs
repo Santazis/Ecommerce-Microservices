@@ -1,12 +1,14 @@
+using ImageProcessing.Consumers;
 using ImageProcessing.Interfaces;
 using ImageProcessing.Services;
 using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 // Add services to the container.
 builder.Services.AddMassTransit(conf =>
 {
+    conf.AddConsumer<ProcessImagesConsumer>();
     conf.SetKebabCaseEndpointNameFormatter();
     conf.UsingRabbitMq((context, opt) =>
     {

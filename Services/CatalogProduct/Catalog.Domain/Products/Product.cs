@@ -6,6 +6,7 @@ public sealed class Product : AggregateRoot
 {
     private Product(Guid id) : base(id)
     {
+        _images = new List<ProductImage>();
     }
 
     private Product()
@@ -19,7 +20,7 @@ public sealed class Product : AggregateRoot
     public int StockQuantity { get; private set; }
     public Guid? MerchantId { get; private set; }
     
-    private List<ProductImage> _images = [];
+    private List<ProductImage> _images;
     public IReadOnlyCollection<ProductImage> Images => _images;
 
     public static Product Create(string name, string description, Money price, Guid catalogId, int stockQuantity,
@@ -36,9 +37,11 @@ public sealed class Product : AggregateRoot
         };
     } 
     
-    public void AddImage(ProductImage productImage)
+    public Guid AddImage(string url, int sortOrder)
     {
-        _images.Add(productImage);
+        var image = ProductImage.Create(url, sortOrder, Id);
+        _images.Add(image);
+        return image.Id;
     }
 
     public void RemoveImage(Guid imageId)
@@ -50,5 +53,16 @@ public sealed class Product : AggregateRoot
         }
     }
     
+    public void UpdateImage(Guid imageId, string url, int? sortOrder)
+    {
+        var image = _images.FirstOrDefault(x => x.Id == imageId);
+        if (image is null) return;
+        if (!sortOrder.HasValue)
+        {
+            image?.UpdateUrl(url);
+            return;
+        }
+        image?.Update(url, sortOrder.Value);
+    }
     
 }
