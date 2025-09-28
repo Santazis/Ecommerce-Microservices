@@ -1,10 +1,14 @@
-﻿using Catalog.Application.Interfaces;
+﻿using Amazon.S3;
+using Amazon.S3.Model;
+using Catalog.Api.Options;
+using Catalog.Application.Interfaces;
 using Catalog.Application.Models.Requests.Product;
 using Catalog.Application.Models.Requests.ProductImage;
 using Contracts.IntegrationEvents;
 using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Controllers
 {
@@ -17,17 +21,38 @@ namespace Catalog.Api.Controllers
         private readonly ITempStorageService _tempStorageService;
         private readonly IProductImageService _imageService;
         private readonly IPublishEndpoint _publishEndpoint;
-
+        private readonly IAmazonS3 _s3Client;
+        private readonly IOptions<S3Settings> _s3Settings;
         public ProductController(IProductService productService, IValidator<CreateProductRequest> validator,
-            ITempStorageService tempStorageService, IProductImageService imageService, IPublishEndpoint publishEndpoint)
+            ITempStorageService tempStorageService, IProductImageService imageService, IPublishEndpoint publishEndpoint, IAmazonS3 s3Client, IOptions<S3Settings> s3Settings)
         {
             _productService = productService;
             _validator = validator;
             _tempStorageService = tempStorageService;
             _imageService = imageService;
             _publishEndpoint = publishEndpoint;
+            _s3Client = s3Client;
+            _s3Settings = s3Settings;
         }
 
+        [HttpPost("test-bucket")]
+        public async Task<IActionResult> UploadAsync(IFormFile file, CancellationToken cancellation)
+        {
+            var stream = file.OpenReadStream();
+            var key = Guid.NewGuid().ToString();
+            var putRequest = new PutObjectRequest()
+            {
+                Key = $"images/{key}",
+                BucketName = _s3Settings.Value.BucketName,
+                InputStream = stream,
+                ContentType = file.ContentType,
+                Metadata = { ["file-name"] = file.FileName }
+            };
+            var url = $"{_s3Settings.Value.ServiceUrl}/{_s3Settings.Value.BucketName}/{putRequest.Key}";
+            await _s3Client.PutObjectAsync(putRequest, cancellation);
+            return Ok(url);
+        }
+        
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromForm] CreateProductRequest request,
             [FromForm] IEnumerable<ImageFileRequest> images, CancellationToken cancellation)

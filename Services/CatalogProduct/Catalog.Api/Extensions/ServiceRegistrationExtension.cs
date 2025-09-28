@@ -1,9 +1,13 @@
-﻿using Catalog.Application.Interfaces;
+﻿using Amazon.Runtime;
+using Amazon.S3;
+using Catalog.Api.Options;
+using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
 using Catalog.Application.Services.Catalog;
 using Catalog.Application.Services.Product;
 using Catalog.Infrastructure.Consumers;
 using MassTransit;
+using Microsoft.Extensions.Options;
 
 namespace Catalog.Api.Extensions
 {
@@ -33,6 +37,23 @@ namespace Catalog.Api.Extensions
                     });
                     opt.ConfigureEndpoints(context);
                 });
+            });
+            return services;
+        }
+
+        public static IServiceCollection AddAmazonS3(this IServiceCollection services,IConfiguration configuration)
+        {
+            services.Configure<S3Settings>(configuration.GetSection("S3Settings"));
+            services.AddSingleton<IAmazonS3>(sp =>
+            {
+                var settings = sp.GetRequiredService<IOptions<S3Settings>>().Value;
+                var cred = new BasicAWSCredentials(settings.AccessKey, settings.SecretKey);
+                var config = new AmazonS3Config()
+                {
+                    ServiceURL = settings.ServiceUrl,
+                    ForcePathStyle = true
+                };
+                return new AmazonS3Client(cred, config);
             });
             return services;
         }
