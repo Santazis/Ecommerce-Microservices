@@ -10,11 +10,13 @@ obj
 packages
 # User-specific files
 *.rsuser
+*minio
 *.suo
 *.user
+*images
 *.userosscache
 *.sln.docstatess
-
+*meta.bkp
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -486,3 +488,4 @@ $RECYCLE.BIN/
 /ConsoleApp1/EfCoreBenchmarks.cs
 /ConsoleApp1/ConsoleApp1.csproj
 /BudgetTracker.rar
+/minio/temp/images/63b07cec-5dfb-49e9-87e0-3e45caf14d3b/2dc3eb49-3af4-4507-bdc8-0fd50e84f637/part.1
