@@ -9,6 +9,7 @@ public sealed class ProductImageConfiguration : IEntityTypeConfiguration<Product
     public void Configure(EntityTypeBuilder<ProductImage> builder)
     {
         builder.ToTable("ProductImages", "public").HasKey(i => i.Id);
+        builder.Property(i => i.Id).ValueGeneratedNever();
         builder.Property(i => i.Url).IsRequired();
         builder.HasOne(i=> i.Product)
             .WithMany(p=> p.Images)

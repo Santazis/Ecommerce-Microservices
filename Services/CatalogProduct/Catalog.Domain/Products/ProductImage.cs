@@ -15,7 +15,7 @@ public sealed class ProductImage : Entity
     public int SortOrder { get; private set; }
     public Guid ProductId { get; private set; }
     public Product Product { get; private set; } = null!;
-    public static ProductImage Create(string url, int sortOrder,Guid productId)
+    internal static ProductImage Create(string url, int sortOrder,Guid productId)
     {
         return new ProductImage(Guid.NewGuid())
         {
@@ -23,5 +23,16 @@ public sealed class ProductImage : Entity
             ProductId = productId,
             SortOrder = sortOrder,
         };
+    }
+
+    internal void Update(string url, int sortOrder)
+    {
+        Url = url;
+        SortOrder = sortOrder;
+    }
+    
+    internal void UpdateUrl(string url)
+    {
+        Url = url;
     }
 }

@@ -13,38 +13,38 @@ public class ImageProcessingService : IImageProcessingService
     private const int ThumbnailWidth = 200;
     private const int ThumbnailHeight = 200;
     private  string Folder = $"{Environment.CurrentDirectory}/images";
-    public async Task<ProductImageProcessedResult> SaveProductImagesAsync(IEnumerable<ProcessImageRequest> images)
+    public async Task<ProductImageProcessedResult> SaveProductImagesAsync(Guid productId,Dictionary<Guid,string> images)
     {
+        if (!Directory.Exists(Folder))
+            Directory.CreateDirectory(Folder);
+        var semaphore = new SemaphoreSlim(2);
         var tasks = images.Select(async x =>
         {
+            await semaphore.WaitAsync();
             try
             {
-                using var image = await Image.LoadAsync(x.TempUrl);
+                using var image = await Image.LoadAsync(x.Value);
                 image.Mutate(i => i.Resize(new ResizeOptions()
                 {
                     Size = new Size(MaxWidth, MaxHeight),
                     Mode = ResizeMode.Max
                 }));
-                if (!Directory.Exists(Folder))
-                {
-                    Directory.CreateDirectory(Folder);
-                }
         
                 var path = Path.Combine(Folder, $"{Guid.NewGuid()}.webp");
+                Console.WriteLine(path);
                 await image.SaveAsWebpAsync(path);
-                File.Delete(x.TempUrl);
-                return new ProductImageData(path, x.SortOrder, x.ProductId, ImageProcessingResultStatus.Success);
+                File.Delete(x.Value);
+                return new KeyValuePair<Guid,ProductImageData>(x.Key,new ProductImageData(path,   ImageProcessingResultStatus.Success)) ;
             }
             catch (Exception e)
             {
-                return new ProductImageData(null, x.SortOrder, x.ProductId,
-                    ImageProcessingResultStatus.Failed);
-            }
-        });
+                return new KeyValuePair<Guid,ProductImageData>(x.Key,new ProductImageData(null,   ImageProcessingResultStatus.Failed)) ;
+            } finally{semaphore.Release();}
+        }); 
         var processedImages = await Task.WhenAll(tasks);
-        
-        int successCount = processedImages.Count(x => x.Status == ImageProcessingResultStatus.Success);
+        int successCount = processedImages.Count(x => x.Value.Status == ImageProcessingResultStatus.Success);
         int failedCount = processedImages.Length - successCount;
-        return new ProductImageProcessedResult(processedImages, successCount, failedCount);
+        var result = processedImages.ToDictionary(x=> x.Key,x=> x.Value);
+        return new ProductImageProcessedResult(productId,result, successCount, failedCount);
     }
 }

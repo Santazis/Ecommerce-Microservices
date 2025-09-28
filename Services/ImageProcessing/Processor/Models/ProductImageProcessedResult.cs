@@ -1,7 +1,8 @@
 ﻿namespace ImageProcessing.Models;
 
 public record ProductImageProcessedResult(
-    IEnumerable<ProductImageData> Result,
+    Guid ProductId,
+    Dictionary<Guid,ProductImageData> Result,
     int SuccessCount,
     int FailedCount
 );

@@ -2,6 +2,7 @@
 using Catalog.Application.Services;
 using Catalog.Application.Services.Catalog;
 using Catalog.Application.Services.Product;
+using Catalog.Infrastructure.Consumers;
 using MassTransit;
 
 namespace Catalog.Api.Extensions
@@ -13,6 +14,7 @@ namespace Catalog.Api.Extensions
             services.AddScoped<ICatalogService, CatalogService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ITempStorageService, TempStorageService>();
+            services.AddScoped<IProductImageService, ProductImageService>();
             return services;
         }
 
@@ -20,6 +22,7 @@ namespace Catalog.Api.Extensions
         {
             services.AddMassTransit(conf =>
             {
+                conf.AddConsumer<ImageProcessedConsumer>();
                 conf.SetKebabCaseEndpointNameFormatter();
                 conf.UsingRabbitMq((context, opt) =>
                 {
