@@ -1,11 +1,12 @@
 ﻿using Amazon.Runtime;
 using Amazon.S3;
-using Catalog.Api.Options;
 using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
 using Catalog.Application.Services.Catalog;
 using Catalog.Application.Services.Product;
 using Catalog.Infrastructure.Consumers;
+using Catalog.Infrastructure.Options;
+using Catalog.Infrastructure.Services;
 using MassTransit;
 using Microsoft.Extensions.Options;
 

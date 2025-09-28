@@ -33,6 +33,7 @@
 
     <ItemGroup>
       <Folder Include="images\temp\" />
+      <Folder Include="Options\" />
     </ItemGroup>
 
 </Project>

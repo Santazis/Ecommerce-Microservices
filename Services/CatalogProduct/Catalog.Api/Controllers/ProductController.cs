@@ -1,9 +1,9 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using Catalog.Api.Options;
 using Catalog.Application.Interfaces;
 using Catalog.Application.Models.Requests.Product;
 using Catalog.Application.Models.Requests.ProductImage;
+using Catalog.Infrastructure.Options;
 using Contracts.IntegrationEvents;
 using FluentValidation;
 using MassTransit;
@@ -74,7 +74,7 @@ namespace Catalog.Api.Controllers
                 await semaphore.WaitAsync(cancellation);
                 try
                 {
-                    var tempUrl = await _tempStorageService.SaveFilesToTempStorageAsync(i.Image.OpenReadStream());
+                    var tempUrl = await _tempStorageService.SaveFilesToTempStorageAsync(i.Image.OpenReadStream(),i.Image.ContentType,i.Image.FileName);;
                     return new ProcessImageRequest(result.Value, tempUrl, i.SortOrder);
                 }
                 catch (Exception e)
