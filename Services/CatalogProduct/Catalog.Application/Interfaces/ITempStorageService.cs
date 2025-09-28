@@ -2,5 +2,5 @@
 
 public interface ITempStorageService
 {
-    Task<string> SaveFilesToTempStorageAsync(Stream stream);
+    Task<string> SaveFilesToTempStorageAsync(Stream stream,string contentType,string fileName);
 }

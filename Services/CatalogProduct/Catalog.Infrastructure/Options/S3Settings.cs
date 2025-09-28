@@ -1,4 +1,4 @@
-﻿namespace Catalog.Api.Options;
+﻿namespace Catalog.Infrastructure.Options;
 
 public class S3Settings
 {

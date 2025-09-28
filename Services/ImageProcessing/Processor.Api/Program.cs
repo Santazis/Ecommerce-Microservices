@@ -1,7 +1,11 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using ImageProcessing.Consumers;
 using ImageProcessing.Interfaces;
+using ImageProcessing.Options;
 using ImageProcessing.Services;
 using MassTransit;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
@@ -19,6 +23,19 @@ builder.Services.AddMassTransit(conf =>
         });
         opt.ConfigureEndpoints(context);
     });
+});
+
+builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var settings = sp.GetRequiredService<IOptions<S3Settings>>().Value;
+    var cred = new BasicAWSCredentials(settings.AccessKey, settings.SecretKey);
+    var config = new AmazonS3Config()
+    {
+        ServiceURL = settings.ServiceUrl,
+        ForcePathStyle = true
+    };
+    return new AmazonS3Client(cred, config);
 });
 builder.Services.AddSingleton<IImageProcessingService, ImageProcessingService>();
 builder.Services.AddControllers();
