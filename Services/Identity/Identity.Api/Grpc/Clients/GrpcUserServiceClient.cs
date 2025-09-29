@@ -1,6 +1,6 @@
 ﻿using Identity.Api.Interfaces;
-using Identity.Api.Services;
 using ProfileGrpc;
+
 
 namespace Identity.Api.Grpc.Clients;
 

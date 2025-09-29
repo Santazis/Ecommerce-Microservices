@@ -33,7 +33,10 @@ builder.Services.AddMessageBroker(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddValidatorsFromAssembly(typeof(ApplicationAssembly).Assembly, includeInternalTypes: true);
 builder.Services.AddControllers();
-builder.Services.AddObservability("catalog-api");
+builder.Services.AddObservability("catalog-api", conf =>
+{
+    conf.AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
+});
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();

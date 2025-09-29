@@ -12,6 +12,7 @@ namespace Identity.Api.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
+    private readonly ILogger<AuthController> _logger;
     private readonly ApplicationDbContext _dbContext;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -20,7 +21,7 @@ public class AuthController : ControllerBase
     private readonly IUserServiceClient _userService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
-    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext, IUserServiceClient userService, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
+    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext, IUserServiceClient userService, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator, ILogger<AuthController> logger)
     {
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         _dbContext = dbContext;
@@ -30,6 +31,7 @@ public class AuthController : ControllerBase
         _userService = userService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -60,6 +62,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync([FromBody]LoginRequest request)
     {
+        _logger.LogInformation("Login request received");
         var user = await _userManager.FindByEmailAsync(request.Email);;
         if (user is null)
         {

@@ -23,7 +23,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseNpgsql(Environment.GetEnvironmentVariable("NpgsqlConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddObservability("identity-api");
+builder.Services.AddObservability("identity-api",null);
 builder.Services.ConfigureAuthJwt(builder.Configuration);
 builder.Services.AddAuthServices();
 builder.Services.AddGrpcClients(builder.Configuration);

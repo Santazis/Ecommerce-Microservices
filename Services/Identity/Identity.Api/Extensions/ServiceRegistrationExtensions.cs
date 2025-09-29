@@ -3,7 +3,6 @@ using Identity.Api.Grpc.Clients;
 using Identity.Api.Interfaces;
 using Identity.Api.Interfaces.Jwt;
 using Identity.Api.Options;
-using Identity.Api.Services;
 using Identity.Api.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -56,7 +55,7 @@ public static class ServiceRegistrationExtensions
 
     public static IServiceCollection AddGrpcClients(this IServiceCollection services, IConfiguration config)
     {
-        services.AddGrpcClient<UserService.UserServiceClient>(opt =>
+        services.AddGrpcClient<ProfileGrpc.UserService.UserServiceClient>(opt =>
         {
             var address = config["GrpcServices:UserServiceClient"];
             if (string.IsNullOrEmpty(address))
