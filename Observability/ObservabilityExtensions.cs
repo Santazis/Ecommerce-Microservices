@@ -17,13 +17,13 @@ public static class ObservabilityExtensions
             {
                 metrics.AddAspNetCoreInstrumentation();
                 metrics.AddHttpClientInstrumentation();
-                
                 metrics.AddOtlpExporter();
             }).WithTracing(tracing =>
             {
                 tracing.AddAspNetCoreInstrumentation();
                 tracing.AddEntityFrameworkCoreInstrumentation(conf=>conf.SetDbStatementForText = true);
                 tracing.AddHttpClientInstrumentation();
+                tracing.AddGrpcClientInstrumentation();
                 tracing.AddOtlpExporter();
                 configure?.Invoke(tracing);
             });
@@ -33,6 +33,7 @@ public static class ObservabilityExtensions
             {
                 opt.IncludeScopes = true;
                 opt.AttachLogsToActivityEvent();
+                opt.IncludeFormattedMessage = true;
                 opt.AddOtlpExporter();
             });
             
