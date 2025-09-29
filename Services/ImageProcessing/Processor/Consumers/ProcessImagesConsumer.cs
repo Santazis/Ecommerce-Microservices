@@ -18,6 +18,7 @@ public class ProcessImagesConsumer : IConsumer<ProcessImagesIntegrationEvent>
 
     public async Task Consume(ConsumeContext<ProcessImagesIntegrationEvent> context)
     {
+        Console.WriteLine("Consumed");
         var result =
             await _imageProcessingService.SaveProductImagesAsync(context.Message.ProductId, context.Message.Images);
         var imageContracts = result.Result.ToDictionary(

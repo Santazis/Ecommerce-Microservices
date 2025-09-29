@@ -58,7 +58,7 @@ public class ImageProcessingService : IImageProcessingService
                 var deleteRequest = new DeleteObjectRequest()
                 {
                     Key = x.Value,
-                    BucketName = _s3Settings.Value.BucketName,
+                    BucketName = _s3Settings.Value.TempBucket,
                 };
                 var url = $"{_s3Settings.Value.ServiceUrl}/{_s3Settings.Value.BucketName}/{putRequest.Key}";
 
