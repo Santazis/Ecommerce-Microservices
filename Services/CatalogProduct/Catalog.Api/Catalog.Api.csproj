@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Observability" Version="1.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
+      <ProjectReference Include="..\Catalog.Database\Catalog.Database.csproj" />
+      <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="images\temp\" />
+      <Folder Include="Options\" />
+    </ItemGroup>
+
+</Project>
