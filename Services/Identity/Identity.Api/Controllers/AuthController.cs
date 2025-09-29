@@ -37,6 +37,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync([FromBody]RegisterRequest request,CancellationToken cancellation)
     {
+        _logger.LogInformation("Registering new user with email {email}",request.Email);
         await _registerValidator.ValidateAndThrowAsync(request,cancellation);
         var user = new ApplicationUser
         {
@@ -54,28 +55,34 @@ public class AuthController : ControllerBase
         {
             return BadRequest(addToRole.Errors);
         }
-        var createProfile = await _userService.CreateProfileAsync(user.Id,user.Email,cancellation);
+        var profile = await _userService.CreateProfileAsync(user.Id,user.Email,cancellation);
+        _logger.LogInformation("Profile created for {Email} with ProfileId {ProfileId}", request.Email, user.Id);
+
         await trnsaction.CommitAsync(cancellation);
-        return Ok(createProfile);
+        _logger.LogInformation("Registration transaction committed for {Email}", request.Email);
+        return Created();
     }
     [ProducesResponseType<LoginResponseDto>(200)]
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync([FromBody]LoginRequest request)
     {
-        _logger.LogInformation("Login request received");
-        var user = await _userManager.FindByEmailAsync(request.Email);;
+        _logger.LogInformation("Login attempt for {email}",request.Email);
+        var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
         {
+            _logger.LogWarning("Login attempt for {email} failed. User not found",request.Email);
             return BadRequest();
         }
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password,false);
         if (!result.Succeeded)
         {
+            _logger.LogWarning("Login attempt for {email} failed. Invalid password",request.Email);
             return BadRequest();
         }
         var roles = await _userManager.GetRolesAsync(user);
         var token = _accessTokenService.GenerateAccessToken(user,roles);
         var response = new LoginResponseDto(token);
+        _logger.LogInformation("Login attempt for {email} successful",request.Email);
         return Ok(response);
     }
    
