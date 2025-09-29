@@ -9,7 +9,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "NpgsqlConnection":"Host=localhost;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Catalog;"
-
       }
     },
     "https": {

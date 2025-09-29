@@ -22,6 +22,8 @@ builder.WebHost.ConfigureKestrel(o =>
     o.ListenAnyIP(8080, l => l.Protocols = HttpProtocols.Http1);
 });
 
+builder.Configuration.AddJsonFile("appsettings.json", false, true)
+    .AddEnvironmentVariables();
 builder.Services.AddDbContext<ApplicationDbContext>(o =>
 {
     o.UseNpgsql(Environment.GetEnvironmentVariable("NpgsqlConnection"));

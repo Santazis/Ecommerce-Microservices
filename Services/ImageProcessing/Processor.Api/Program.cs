@@ -8,6 +8,8 @@ using MassTransit;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.json", false, true)
+    .AddEnvironmentVariables();
 builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 // Add services to the container.
 builder.Services.AddMassTransit(conf =>

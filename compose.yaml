@@ -1,4 +1,12 @@
-﻿services:
+﻿x-common-env: &common-env
+  MessageBroker__Host: ${RABBITMQ_HOST}
+  MessageBroker__Username: ${RABBITMQ_USER}
+  MessageBroker__Password: ${RABBITMQ_PASS}
+  S3Settings__ServiceUrl: ${S3_URL}
+  S3Settings__AccessKey: ${S3_ACCESS_KEY}
+  S3Settings__SecretKey: ${S3_SECRET_KEY}
+
+services:
   aspire-dashboard:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
     ports:
@@ -8,8 +16,8 @@
     image: rabbitmq:management-alpine
     container_name: rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -20,8 +28,8 @@
     image: quay.io/minio/minio:latest
     container_name: minio
     environment:
-      MINIO_ROOT_USER : guest
-      MINIO_ROOT_PASSWORD : guest1234
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASS}
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -46,6 +54,7 @@
       - "5000:8080"
       - "5001:8081"
     environment:
+      <<: *common-env
       NpgsqlConnection: "Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Users"
     volumes:
       - .:/app
@@ -65,8 +74,9 @@
       - "5002:8080"
       - "5003:8081"
     environment:
-      - NpgsqlConnection=Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Identity
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      <<: *common-env
+      NpgsqlConnection: "Hosthost.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Identity"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
     volumes:
       - .:/app
       - /app/bin
@@ -80,7 +90,8 @@
       - "5004:8080"
       - "5005:8081"
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      <<: *common-env
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
     volumes:
       - .:/app
       - /app/bin
@@ -99,9 +110,12 @@
       context: Services/CatalogProduct/Catalog.Api
       dockerfile: Dockerfile
     container_name: catalog-api
+    depends_on:
+      - rabbitmq
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
-      - NpgsqlConnection=Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Catalog
+      <<: *common-env
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      NpgsqlConnection: "Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Catalog"
   imageprocessing.api:
     ports:
       - "5008:8080"
@@ -110,3 +124,7 @@
       context: Services/ImageProcessing/Processor.Api
       dockerfile: Dockerfile
     container_name: imageprocessing-api
+    depends_on:
+      - rabbitmq
+    environment:
+      <<: *common-env
