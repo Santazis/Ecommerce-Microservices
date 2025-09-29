@@ -6,6 +6,7 @@ using ImageProcessing.Options;
 using ImageProcessing.Services;
 using MassTransit;
 using Microsoft.Extensions.Options;
+using Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", false, true)
@@ -26,7 +27,10 @@ builder.Services.AddMassTransit(conf =>
         opt.ConfigureEndpoints(context);
     });
 });
-
+builder.Services.AddObservability("image-processor-api", conf =>
+{
+    conf.AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
+});
 builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("S3Settings"));
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {

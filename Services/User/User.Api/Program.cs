@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Observability;
 using ProfileGrpc;
 using User.Api.Extensions;
 using User.Database;
@@ -64,6 +65,7 @@ builder.Services.AddAuthentication(o =>
         }
     };
 });
+builder.Services.AddObservability("user-api");
 builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();

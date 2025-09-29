@@ -4,6 +4,7 @@ using Amazon.S3.Model;
 using ImageProcessing.Interfaces;
 using ImageProcessing.Models;
 using ImageProcessing.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -18,24 +19,28 @@ public class ImageProcessingService : IImageProcessingService
     private const int MaxHeight = 800;
     private const int ThumbnailWidth = 200;
     private const int ThumbnailHeight = 200;
+    private readonly ILogger<ImageProcessingService> _logger;
 
-    public ImageProcessingService(IAmazonS3 s3Client, IOptions<S3Settings> s3Settings)
+    public ImageProcessingService(IAmazonS3 s3Client, IOptions<S3Settings> s3Settings, ILogger<ImageProcessingService> logger)
     {
         _s3Client = s3Client;
         _s3Settings = s3Settings;
+        _logger = logger;
     }
 
     public async Task<ProductImageProcessedResult> SaveProductImagesAsync(Guid productId,
         Dictionary<Guid, string> images)
     {
+        _logger.LogInformation("Processing {imagesCount} images for product {productId}", images.Count, productId);
         var semaphore = new SemaphoreSlim(2);
         var tasks = images.Select(async x =>
         {
             await semaphore.WaitAsync();
+            _logger.LogInformation("Processing image {imageName} for product {productId}", x.Value, productId);
             try
             {
-                var buckerResponse = await _s3Client.GetObjectAsync(_s3Settings.Value.TempBucket, x.Value);
-                await using var stream = buckerResponse.ResponseStream;
+                var bucketResponse = await _s3Client.GetObjectAsync(_s3Settings.Value.TempBucket, x.Value);
+                await using var stream = bucketResponse.ResponseStream;
                 using var image = await Image.LoadAsync(stream);
                 image.Mutate(i => i.Resize(new ResizeOptions()
                 {
@@ -68,6 +73,7 @@ public class ImageProcessingService : IImageProcessingService
             }
             catch (Exception e)
             {
+                _logger.LogError(e, "Error processing image {imageName} for product {productId}", x.Value, productId);
                 return new KeyValuePair<Guid, ProductImageData>(x.Key,
                     new ProductImageData(null, ImageProcessingResultStatus.Failed));
             }
@@ -80,6 +86,7 @@ public class ImageProcessingService : IImageProcessingService
         int successCount = processedImages.Count(x => x.Value.Status == ImageProcessingResultStatus.Success);
         int failedCount = processedImages.Length - successCount;
         var result = processedImages.ToDictionary(x => x.Key, x => x.Value);
+        _logger.LogInformation("Processing {imagesCount} images for product {productId} completed", images.Count, productId);
         return new ProductImageProcessedResult(productId, result, successCount, failedCount);
     }
 }

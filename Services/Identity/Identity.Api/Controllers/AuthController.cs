@@ -12,6 +12,7 @@ namespace Identity.Api.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
+    private readonly ILogger<AuthController> _logger;
     private readonly ApplicationDbContext _dbContext;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -20,7 +21,7 @@ public class AuthController : ControllerBase
     private readonly IUserServiceClient _userService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
-    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext, IUserServiceClient userService, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator)
+    public AuthController(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext, SignInManager<ApplicationUser> signInManager, IAccessTokenService accessTokenService, ApplicationDbContext applicationDbContext, IUserServiceClient userService, IValidator<RegisterRequest> registerValidator, IValidator<LoginRequest> loginValidator, ILogger<AuthController> logger)
     {
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         _dbContext = dbContext;
@@ -30,11 +31,13 @@ public class AuthController : ControllerBase
         _userService = userService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
+        _logger = logger;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync([FromBody]RegisterRequest request,CancellationToken cancellation)
     {
+        _logger.LogInformation("Registering new user with email {email}",request.Email);
         await _registerValidator.ValidateAndThrowAsync(request,cancellation);
         var user = new ApplicationUser
         {
@@ -52,27 +55,34 @@ public class AuthController : ControllerBase
         {
             return BadRequest(addToRole.Errors);
         }
-        var createProfile = await _userService.CreateProfileAsync(user.Id,user.Email,cancellation);
+        var profile = await _userService.CreateProfileAsync(user.Id,user.Email,cancellation);
+        _logger.LogInformation("Profile created for {Email} with ProfileId {ProfileId}", request.Email, user.Id);
+
         await trnsaction.CommitAsync(cancellation);
-        return Ok(createProfile);
+        _logger.LogInformation("Registration transaction committed for {Email}", request.Email);
+        return Created();
     }
     [ProducesResponseType<LoginResponseDto>(200)]
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync([FromBody]LoginRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);;
+        _logger.LogInformation("Login attempt for {email}",request.Email);
+        var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
         {
+            _logger.LogWarning("Login attempt for {email} failed. User not found",request.Email);
             return BadRequest();
         }
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password,false);
         if (!result.Succeeded)
         {
+            _logger.LogWarning("Login attempt for {email} failed. Invalid password",request.Email);
             return BadRequest();
         }
         var roles = await _userManager.GetRolesAsync(user);
         var token = _accessTokenService.GenerateAccessToken(user,roles);
         var response = new LoginResponseDto(token);
+        _logger.LogInformation("Login attempt for {email} successful",request.Email);
         return Ok(response);
     }
    

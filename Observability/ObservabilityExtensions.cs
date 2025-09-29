@@ -9,7 +9,7 @@ namespace Observability;
 
 public static class ObservabilityExtensions
 {
-    public static IServiceCollection AddObservability(this IServiceCollection services, string serviceName)
+    public static IServiceCollection AddObservability(this IServiceCollection services, string serviceName,Action<TracerProviderBuilder>? configure = null)
     {
         services.AddOpenTelemetry()
             .ConfigureResource(conf => conf.AddService(serviceName))
@@ -21,13 +21,21 @@ public static class ObservabilityExtensions
             }).WithTracing(tracing =>
             {
                 tracing.AddAspNetCoreInstrumentation();
-                tracing.AddEntityFrameworkCoreInstrumentation();
+                tracing.AddEntityFrameworkCoreInstrumentation(conf=>conf.SetDbStatementForText = true);
                 tracing.AddHttpClientInstrumentation();
+                tracing.AddGrpcClientInstrumentation();
                 tracing.AddOtlpExporter();
+                configure?.Invoke(tracing);
             });
         services.AddLogging(log =>
         {
-            log.AddOpenTelemetry(opt => opt.AddOtlpExporter());
+            log.AddOpenTelemetry(opt =>
+            {
+                opt.IncludeScopes = true;
+                opt.AttachLogsToActivityEvent();
+                opt.IncludeFormattedMessage = true;
+                opt.AddOtlpExporter();
+            });
             
         });
         return services;
