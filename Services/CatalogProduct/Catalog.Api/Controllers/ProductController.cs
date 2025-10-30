@@ -1,4 +1,5 @@
 ﻿using Catalog.Application.Interfaces;
+using Catalog.Application.Models.Requests.Pagination;
 using Catalog.Application.Models.Requests.Product;
 using Catalog.Application.Models.Requests.ProductImage;
 using Contracts.IntegrationEvents;
@@ -27,7 +28,36 @@ namespace Catalog.Api.Controllers
             _imageService = imageService;
             _publishEndpoint = publishEndpoint;
         }
-        
+
+        [HttpGet]
+        public async Task<IActionResult> GetProductsAsync([FromQuery] PaginationRequest pagination,
+            CancellationToken cancellation)
+        {
+            return Ok(await _productService.GetProductsAsync(pagination,cancellation));
+        }
+
+        [HttpDelete("{productId:guid}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid productId, CancellationToken cancellation)
+        {
+            //temporary allowing no auth operations pass userId in future
+            var result =  await _productService.DeleteAsync(productId,Guid.NewGuid(),cancellation);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+            return NoContent();
+        }
+
+        [HttpGet("{productId:guid}")]
+        public async Task<IActionResult> GetByIdAsync([FromRoute] Guid productId, CancellationToken cancellation)
+        {
+            var result = await _productService.GetByIdAsync(productId,cancellation);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromForm] CreateProductRequest request,
             [FromForm] IEnumerable<ImageFileRequest> images, CancellationToken cancellation)
@@ -56,7 +86,7 @@ namespace Catalog.Api.Controllers
                 new ProcessImagesIntegrationEvent(productId, imagesResponse.Value), cancellation);
             return Ok();
         }
-
+    
         private async Task<IEnumerable<ProcessImageRequest>> ProcessImageRequestsAsync(
             IEnumerable<ImageFileRequest> images, Guid productId, CancellationToken cancellation)
         {

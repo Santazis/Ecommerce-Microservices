@@ -1,8 +1,15 @@
 ﻿using Catalog.Application.Interfaces;
+using Catalog.Application.Models.Images;
+using Catalog.Application.Models.Product;
+using Catalog.Application.Models.Requests.Pagination;
 using Catalog.Application.Models.Requests.Product;
+using Catalog.Application.Models.Responses;
 using Catalog.Database;
 using Catalog.Domain.Common.Errors;
 using Catalog.Domain.Products;
+using Contracts.IntegrationEvents;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SharedKernel.Common;
 
@@ -13,13 +20,14 @@ public class ProductService : IProductService
     private readonly ApplicationDbContext _dbContext;
     private readonly ICatalogService _catalogService;
     private readonly ILogger<ProductService> _logger;
-
+    private readonly IPublishEndpoint _publishEndpoint;
     public ProductService(ApplicationDbContext dbContext, ICatalogService catalogService,
-        ILogger<ProductService> logger)
+        ILogger<ProductService> logger, IPublishEndpoint publishEndpoint)
     {
         _dbContext = dbContext;
         _catalogService = catalogService;
         _logger = logger;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<Guid>> CreateAsync(CreateProductRequest request, CancellationToken cancellation)
@@ -40,5 +48,51 @@ public class ProductService : IProductService
         await _dbContext.SaveChangesAsync(cancellation);
         _logger.LogInformation("Product created {productId}", product.Id);
         return Result<Guid>.Success(product.Id);
+    }
+
+    public async Task<PaginatedResponse<ProductDto>> GetProductsAsync(PaginationRequest pagination, CancellationToken cancellation)
+    {
+        var count = await _dbContext.Products.CountAsync(cancellation);
+        var products = await _dbContext.Products.AsNoTracking()
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .Select(p => new ProductDto(p.Id, p.CatalogId, p.Name, p.Description, p.Price.Amount, p.Price.Currency,
+                p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(), p.StockQuantity > 0)).ToListAsync(cancellation);
+        return new PaginatedResponse<ProductDto>(products,count);
+    }
+
+    public async Task<Result> DeleteAsync(Guid id,Guid userId, CancellationToken cancellation)
+    {
+        var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id,cancellation);
+        if (product is null)
+        {
+            _logger.LogError("Product {productId} not found", id);
+            return Result.Failure(ProductErrors.NotFound);
+        }
+
+        //temporary no auth see controller
+        if (product.MerchantId != null && product.MerchantId != userId)
+        {
+            _logger.LogWarning("{userId} trying do delete other user product",userId);
+            return Result.Failure(ProductErrors.NoPermission);
+        }
+        _dbContext.Products.Remove(product);
+        await _dbContext.SaveChangesAsync(cancellation);
+        _logger.LogInformation("Product {productId} deleted", id);
+        await _publishEndpoint.Publish(new ProductDeletedIntegrationEvent(product.Id),cancellation);
+        return Result.Success;
+    }
+
+    public async Task<Result<ProductDto>> GetByIdAsync(Guid id, CancellationToken cancellation)
+    {
+        var product = await _dbContext.Products.AsNoTracking()
+            .Select(p=> new ProductDto(p.Id,p.CatalogId,p.Name,p.Description,p.Price.Amount,p.Price.Currency,p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(),p.StockQuantity > 0))
+            .FirstOrDefaultAsync(p => p.Id == id,cancellation);
+        if (product is null)
+        {
+            _logger.LogError("Product {productId} not found", id);
+            return Result<ProductDto>.Failure(ProductErrors.NotFound);
+        }
+        return Result<ProductDto>.Success(product);
     }
 }
