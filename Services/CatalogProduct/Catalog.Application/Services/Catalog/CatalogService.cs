@@ -55,8 +55,9 @@ public class CatalogService : ICatalogService
     {
         _logger.LogInformation("Getting catalog {catalogId}",id);
         var catalog = await _context.Catalogs
-                .Select(c=> new CatalogDto(c.Id,c.Name,c.Description,c.ParentId,c.Slug))
-                .FirstOrDefaultAsync(c => c.Id == id,cancellation);
+            .Where(c => c.Id == id)
+            .Select(c => new CatalogDto(c.Id, c.Name, c.Description, c.ParentId, c.Slug))
+            .FirstOrDefaultAsync(cancellation);
         if (catalog is null)
         {
             _logger.LogError("Catalog {catalogId} not found",id);

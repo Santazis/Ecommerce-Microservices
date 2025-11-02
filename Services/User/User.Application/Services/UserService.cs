@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Contracts.IntegrationEvents;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using User.Application.Interfaces;
 using User.Application.Models.Requests;
 using User.Database;
@@ -11,10 +13,11 @@ namespace User.Application.Services;
 public class UserService : IUserService
 {
     private readonly ApplicationDbContext _context;
-
-    public UserService(ApplicationDbContext context)
+    private readonly IPublishEndpoint _publishEndpoint;
+    public UserService(ApplicationDbContext context, IPublishEndpoint publishEndpoint)
     {
         _context = context;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task CreateUserAsync(CreateUserRequest request,CancellationToken cancellation)
@@ -23,6 +26,7 @@ public class UserService : IUserService
         var user = Domain.Models.Entities.Users.User.Create(request.UserId,email);
         await _context.Users.AddAsync(user,cancellation);
         await _context.SaveChangesAsync(cancellation);
+        await _publishEndpoint.Publish(new UserCreatedIntegrationEvent(user.Id),cancellation);
         //_context.Profiles.Add(new Profile(user.Id,email))
     }
 

@@ -1,5 +1,6 @@
 using Amazon.Runtime;
 using Amazon.S3;
+using ImageProcessing;
 using ImageProcessing.Consumers;
 using ImageProcessing.Interfaces;
 using ImageProcessing.Options;
@@ -15,7 +16,7 @@ builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 // Add services to the container.
 builder.Services.AddMassTransit(conf =>
 {
-    conf.AddConsumer<ProcessImagesConsumer>();
+    conf.AddConsumers(typeof(AssemblyReference).Assembly);
     conf.SetKebabCaseEndpointNameFormatter();
     conf.UsingRabbitMq((context, opt) =>
     {

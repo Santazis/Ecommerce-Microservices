@@ -2,10 +2,13 @@ using Catalog.Api.ExceptionHandlers;
 using Catalog.Api.Extensions;
 using Catalog.Application;
 using Catalog.Database;
+using Catalog.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Observability;
+using ProductGrpc;
+
 //disabling tls for grpc to work without https
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
@@ -42,9 +45,10 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.ConfigureSwaggerWithJwt();
+builder.Services.AddGrpc();
 var app = builder.Build();
 app.UseExceptionHandler();
-
+app.MapGrpcService<ProductGrpcService>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

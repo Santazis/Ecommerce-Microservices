@@ -50,10 +50,9 @@ public class ImageProcessingService : IImageProcessingService
                 await using var ms = new MemoryStream();
                 await image.SaveAsWebpAsync(ms);
                 ms.Position = 0;
-                var key = Guid.NewGuid().ToString();
                 var putRequest = new PutObjectRequest()
                 {
-                    Key = $"products/{key}",
+                    Key = $"products/{productId}/{x.Key}",
                     BucketName = _s3Settings.Value.BucketName,
                     InputStream = ms,
                     ContentType = MediaTypeNames.Image.Webp,
@@ -88,5 +87,36 @@ public class ImageProcessingService : IImageProcessingService
         var result = processedImages.ToDictionary(x => x.Key, x => x.Value);
         _logger.LogInformation("Processing {imagesCount} images for product {productId} completed", images.Count, productId);
         return new ProductImageProcessedResult(productId, result, successCount, failedCount);
+    }
+
+    public async Task DeleteProductImagesAsync(Guid productId)
+    {
+        _logger.LogInformation("Deleting images for product {productId}", productId);
+        var prefix = $"products/{productId}/";
+        string continuationToken = null;
+        do
+        {
+            var listObjectsRequest = new ListObjectsV2Request()
+            {
+                BucketName = _s3Settings.Value.BucketName,
+                Prefix = prefix,
+                ContinuationToken = continuationToken
+            };
+            var listObjectsResponse = await _s3Client.ListObjectsV2Async(listObjectsRequest);
+            if (listObjectsResponse.S3Objects.Any())
+            {
+                var deleteRequest = new DeleteObjectsRequest()
+                {
+                    BucketName = _s3Settings.Value.BucketName,
+                    Objects = listObjectsResponse.S3Objects.Select(x => new KeyVersion()
+                    {
+                        Key = x.Key
+                    }).ToList()
+                };
+                await _s3Client.DeleteObjectsAsync(deleteRequest);
+            }
+            continuationToken = listObjectsResponse.NextContinuationToken;
+        } while (continuationToken != null);
+        _logger.LogInformation("Images for product {productId} deleted", productId);
     }
 }
