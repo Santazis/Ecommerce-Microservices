@@ -1,5 +1,4 @@
 ﻿using Catalog.Application.Models.Requests.ProductImage;
-using Catalog.Application.Services;
 using SharedKernel.Common;
 
 namespace Catalog.Application.Interfaces;

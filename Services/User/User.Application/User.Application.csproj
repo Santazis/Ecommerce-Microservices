@@ -7,8 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\Contracts\Contracts.csproj" />
       <ProjectReference Include="..\User.Database\User.Database.csproj" />
       <ProjectReference Include="..\User.Domain\User.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.5" />
     </ItemGroup>
 
 </Project>

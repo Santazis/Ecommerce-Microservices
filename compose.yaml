@@ -99,7 +99,6 @@ services:
         - action: sync
           path: Ecommerce.Gateway
           target: /app
-  
   catalog.api:
     ports:
       - "5006:8080"
@@ -125,3 +124,24 @@ services:
       - rabbitmq
     environment:
       <<: *common-env
+    volumes:
+      - .:/app
+      - /app/bin
+      - /app/obj
+  basket-api:
+    build:
+      context: Basket.Api
+      dockerfile: Dockerfile
+    container_name: basket-api
+    ports:
+      - "5010:8080"
+      - "5011:8081"
+    depends_on:
+      - rabbitmq
+    environment:
+      <<: *common-env
+      NpgsqlConnection: "Host=host.docker.internal;Port=5432;User Id=postgres;Password=4636;Database=Ecommerce.Basket"
+    volumes:
+      - .:/app
+      - /app/bin
+      - /app/obj

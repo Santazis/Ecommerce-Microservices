@@ -65,7 +65,11 @@ builder.Services.AddAuthentication(o =>
         }
     };
 });
-builder.Services.AddObservability("user-api");
+builder.Services.AddMessageBroker(builder.Configuration);
+builder.Services.AddObservability("user-api", conf =>
+{
+    conf.AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
+});
 builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
