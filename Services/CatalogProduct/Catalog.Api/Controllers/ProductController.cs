@@ -86,7 +86,18 @@ namespace Catalog.Api.Controllers
                 new ProcessImagesIntegrationEvent(productId, imagesResponse.Value), cancellation);
             return Ok();
         }
-    
+
+        [HttpGet("{productId:guid}/ava")]
+        public async Task<IActionResult> IsAvailableAsync([FromRoute] Guid productId, [FromQuery] int quantity,
+            CancellationToken cancellation)
+        {
+            var result = await _productService.IsAvailableAsync(productId, quantity, cancellation);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
         private async Task<IEnumerable<ProcessImageRequest>> ProcessImageRequestsAsync(
             IEnumerable<ImageFileRequest> images, Guid productId, CancellationToken cancellation)
         {

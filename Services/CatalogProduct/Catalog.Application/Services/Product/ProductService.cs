@@ -57,7 +57,7 @@ public class ProductService : IProductService
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .Select(p => new ProductDto(p.Id, p.CatalogId, p.Name, p.Description, p.Price.Amount, p.Price.Currency,
-                p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(), p.StockQuantity > 0)).ToListAsync(cancellation);
+                p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(), p.StockQuantity > 0,p.StockQuantity)).ToListAsync(cancellation);
         return new PaginatedResponse<ProductDto>(products,count);
     }
 
@@ -85,14 +85,67 @@ public class ProductService : IProductService
 
     public async Task<Result<ProductDto>> GetByIdAsync(Guid id, CancellationToken cancellation)
     {
-        var product = await _dbContext.Products.AsNoTracking()
-            .Select(p=> new ProductDto(p.Id,p.CatalogId,p.Name,p.Description,p.Price.Amount,p.Price.Currency,p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(),p.StockQuantity > 0))
-            .FirstOrDefaultAsync(p => p.Id == id,cancellation);
+        var product = await _dbContext.Products
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Select(p => new ProductDto(
+                p.Id,
+                p.CatalogId,
+                p.Name,
+                p.Description,
+                p.Price.Amount,
+                p.Price.Currency,
+                p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(),
+                p.StockQuantity > 0,
+                p.StockQuantity
+            ))
+            .FirstOrDefaultAsync(cancellation);
         if (product is null)
         {
             _logger.LogError("Product {productId} not found", id);
             return Result<ProductDto>.Failure(ProductErrors.NotFound);
         }
         return Result<ProductDto>.Success(product);
+    }
+
+    public async Task<Result<bool>> IsAvailableAsync(Guid productId, int quantity, CancellationToken cancellationToken)
+    {
+        var product = await _dbContext.Products.AsNoTracking().FirstOrDefaultAsync(p=> p.Id == productId,cancellationToken);
+        if (product is null)
+        {
+            _logger.LogInformation("Product {productId} not found", productId);
+            return Result<bool>.Failure(ProductErrors.NotFound);
+        }
+        if (product.StockQuantity == 0)
+        {
+            _logger.LogInformation("Product out of stock {productId}",productId);
+            return Result<bool>.Failure(ProductErrors.OutOfStock);
+        }
+
+        if (product.StockQuantity < quantity)
+        {
+            _logger.LogInformation("Insufficient stock for product {productId}",productId);
+            return Result<bool>.Failure(ProductErrors.InsufficientStock);
+        }
+        _logger.LogInformation("Product {productId} is available",productId);
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetProductsByIds(HashSet<Guid> ids, CancellationToken cancellation)
+    {
+        var products = await _dbContext.Products.AsNoTracking()
+            .Where(p => ids.Contains(p.Id))
+            .Select(p => new ProductDto(
+                p.Id,
+                p.CatalogId,
+                p.Name,
+                p.Description,
+                p.Price.Amount,
+                p.Price.Currency,
+                p.Images.Select(i => new ImageDto(i.Url, i.SortOrder)).ToList(),
+                p.StockQuantity > 0,
+                p.StockQuantity))
+            .ToListAsync(cancellation);
+        return products;
     }
 }
